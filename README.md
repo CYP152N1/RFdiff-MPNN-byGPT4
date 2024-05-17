@@ -18,6 +18,9 @@
 ./gen.sh path_to_your_pdb_file.pdb
 
 ```
+## 注意
+RFdiffusionやProteinMPNNのpathを変更する必要があります。
+
 
 ## Overview
 `gen.sh` is a Bash script that executes multiple analysis scripts on a specific PDB file and prepares the input for ProteinMPNN based on the results. This script mainly extracts specific features from structural data and prepares them for subsequent processing.
