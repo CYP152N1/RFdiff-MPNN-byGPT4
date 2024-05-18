@@ -1,39 +1,106 @@
 #!/bin/bash
-RFDIFFUSION_PATH=/path/to/RFdiffusion
-PROTEINMPNN_PATH=/path/to//ProteinMPNN
-GENSH_PATH=/path/to/the/script/Gensh
-RFDIFF_num_designs=4
-MPNN_num_seq=5
+RFDIFFUSION_PATH=/home/mdonoda/data/RFdiffusion//RFdiffusion
+PROTEINMPNN_PATH=/home/mdonoda/data/RFdiffusion/ProteinMPNN
+GENSH_PATH=/home/mdonoda/data/RFdiffusion/Gensh
+RFDIFF_num_designs=2  # Default value for number of designs
+MPNN_num_seq=2        # Default value for number of sequences
+custom_output=""      # Default value, auto-generated from PDB unless specified
+linker_range="10-40"  # Default linker range
+remove_n=false        # Option to remove the initial linker
+remove_c=false        # Option to remove the final linker
 
-# このスクリプトは、input_pdbのパスを引数として受け取ります。
-if [[ -z "$1" ]]; then
-    echo "Usage: $0 <path_to_input_pdb>"
+# Process command line arguments manually
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -p|--pdb)
+            input_pdb_path="$2"
+            shift 2
+            ;;
+        -nd|--num_designs)
+            RFDIFF_num_designs="$2"
+            shift 2
+            ;;
+        -ns|--num_sequences)
+            MPNN_num_seq="$2"
+            shift 2
+            ;;
+        -c|--custom_out)
+            custom_output="$2"
+            shift 2
+            ;;
+        -l|--linker)
+            linker_range="$2"
+            shift 2
+            ;;
+        -rn)
+            remove_n=true
+            shift
+            ;;
+        -rc)
+            remove_c=true
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+echo "PDB Path: $input_pdb_path"
+echo "Remove N: $remove_n"
+echo "Remove C: $remove_c"
+echo "Linker Range: $linker_range"
+echo "Command Args: $command_args"
+
+# Validate mandatory PDB path
+if [[ -z "$input_pdb_path" ]]; then
+    echo "Error: No input PDB path provided."
     exit 1
 fi
-input_pdb_path=$1
 
 if [ ! -f "$input_pdb_path" ]; then
     echo "Error: File not found - $input_pdb_path"
     exit 1
 fi
 
-
-# 日付を yyyy-mm-dd 形式で取得
+# Get current date in yyyy-mm-dd format
 current_date=$(date +%Y-%m-%d)
 
-# PDB ファイルの名前からプレフィックスを抽出（拡張子前の部分のみ取得）
+# Extract the prefix from the PDB file name (the part before the extension)
 pdb_prefix=$(basename "$input_pdb_path" .pdb)
 
-# 出力ディレクトリのパスを設定
+# Set up the output directory path
 output_pref="$(pwd)/output/$pdb_prefix/RFdiffusion/$current_date/$pdb_prefix"
 output_dir="$(pwd)/output/$pdb_prefix/RFdiffusion/$current_date"
 
-# Pythonスクリプトを実行し、出力を変数に格納します。
-output=$(python3 "${GENSH_PATH}"/input_recog.py "$input_pdb_path")
+# コマンド引数の構築
+command_args=""
+[[ "$remove_n" == "true" ]] && command_args+="-rn "
+[[ "$remove_c" == "true" ]] && command_args+="-rc "
+command_args+="-l $linker_range"
+
+
+echo "Command Args: $command_args"  # デバッグ出力
+
+# Pythonスクリプトの実行
+# Pythonスクリプトの実行条件を調整
+if [[ -n "$custom_output" ]]; then
+    # custom_outputが指定されている場合、Pythonスクリプトの実行をスキップ
+    output="$custom_output"
+else
+    # custom_outputが指定されていない場合、Pythonスクリプトを実行
+    output=$(python3 "${GENSH_PATH}"/input_recog.py "$input_pdb_path" $command_args)
+    if [ $? -ne 0 ]; then
+        echo "Error: Python script execution failed."
+        exit 1
+    fi
+fi
+
 if [ $? -ne 0 ]; then
     echo "Error: Python script execution failed."
     exit 1
 fi
+
 # シェルスクリプトを生成します。
 cat <<EOF > run_inference.sh
 #!/bin/bash
@@ -103,7 +170,7 @@ fixed_positions="$fixed_positions"
 python ${PROTEINMPNN_PATH}//helper_scripts/parse_multiple_chains.py --input_path=\$folder_with_pdbs --output_path=\$path_for_parsed_chains
 python ${PROTEINMPNN_PATH}//helper_scripts/assign_fixed_chains.py --input_path=\$path_for_parsed_chains --output_path=\$path_for_assigned_chains --chain_list "\$chains_to_design"
 python ${PROTEINMPNN_PATH}/helper_scripts/make_fixed_positions_dict.py --input_path=\$path_for_parsed_chains --output_path=\$path_for_fixed_positions --chain_list "\$chains_to_design" --position_list "\$fixed_positions"
-python /home/mdonoda/data/RFdiffusion/ProteinMPNN/protein_mpnn_run.py \
+python ${PROTEINMPNN_PATH}/protein_mpnn_run.py \
         --jsonl_path \$path_for_parsed_chains \
         --chain_id_jsonl \$path_for_assigned_chains \
         --fixed_positions_jsonl \$path_for_fixed_positions \
@@ -126,9 +193,11 @@ done
 # 出力ディレクトリのパスを設定
 output_mpnn_dir="$(pwd)/output/$pdb_prefix/ProteinMPNN/$current_date"
 fasta_output_dir="$(pwd)/output/$pdb_prefix/fasta"
+colab_output_dir="$(pwd)/output/$pdb_prefix/colabfold"
 pdb_output_dir="$(pwd)/output/$pdb_prefix/pdb"
 # fasta ディレクトリの作成
 mkdir -p "$fasta_output_dir"
+mkdir -p "$pdb_output_dir"
 
 # 最後に、ProteinMPNN用に.faファイルを解析し、個別のファイルに分割する
 echo "Processing .fa files for ProteinMPNN in $output_mpnn_dir and saving to $fasta_output_dir..."
@@ -155,4 +224,5 @@ done
 
 echo "Fasta files have been prepared and saved to $fasta_output_dir."
 
-colabfold_batch $fasta_output_dir $pdb_output_dir
+#colabfold_batch $fasta_output_dir $colab_output_dir
+#cp ${colab_output_dir}/*.pdb ${pdb_output_dir}
