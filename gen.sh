@@ -1,7 +1,7 @@
 #!/bin/bash
-RFDIFFUSION_PATH=/home/mdonoda/data/RFdiffusion//RFdiffusion
-PROTEINMPNN_PATH=/home/mdonoda/data/RFdiffusion/ProteinMPNN
-GENSH_PATH=/home/mdonoda/data/RFdiffusion/Gensh
+RFDIFFUSION_PATH=/pass/to/RFdiffusion
+PROTEINMPNN_PATH=/pass/to/ProteinMPNN
+GENSH_PATH=/pass/to/RFdiff-MPNN-byGPT4
 RFDIFF_num_designs=2  # Default value for number of designs
 MPNN_num_seq=2        # Default value for number of sequences
 custom_output=""      # Default value, auto-generated from PDB unless specified
