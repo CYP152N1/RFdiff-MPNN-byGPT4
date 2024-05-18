@@ -4,36 +4,6 @@
 
 ## 必要条件
 
-- 切り出されてたタンパク質構造ファイル（.pdb形式）
-
-## 依存関係
-
-- RFdiffusion: 
-
-https://github.com/RosettaCommons/RFdiffusion
-
-https://github.com/RosettaCommons/RFdiffusion/issues/14
-
-https://github.com/truatpasteurdotfr/RFdiffusion/tree/main/env
-
-- ProteinMPNN
-
-https://github.com/dauparas/ProteinMPNN
-
-
-`gen.sh` は以下の Python スクリプトを実行しますので、これらのスクリプトが事前に適切な場所に設置されている必要があります:
-
-- `input_recog.py`: PDBファイルを解析し、関連する特性を抽出します。
-- `MPNN-prep.py`: 抽出した特性を基に、ProteinMPNN 用のデータを準備します。
-
-
-
-# RFdiffusion Script
-
-このスクリプトは、タンパク質構造に基づいて新しいデザインを生成するために、RFdiffusionとProteinMPNNを利用します。これは、指定されたPDBファイルから開始して、必要なデータを準備し、複数の推論ステップを経て、タンパク質の新しい配列と構造を設計します。
-
-## 必要条件
-
 - 事前にインストールされたRFdiffusionとProteinMPNN
 - 切り出されたタンパク質構造ファイル（.pdb形式）
 - Biopythonライブラリ
