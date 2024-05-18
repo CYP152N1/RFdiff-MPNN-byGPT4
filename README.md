@@ -15,7 +15,7 @@ RFDIFFUSION_PATH=/path/to/RFdiffusion
 
 PROTEINMPNN_PATH=/path/to//ProteinMPNN
 
-GENSH_PATH=/path/to/the/script/RFdiff-MPNN-byGPT4
+GENSH_PATH=/path/to/RFdiff-MPNN-byGPT4
 
 RFDIFF_num_designs=4
 
