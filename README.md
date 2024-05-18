@@ -1,9 +1,25 @@
 # RFdiff-MPNN-byGPT4
 
 ## 概要
-`gen.sh` は、特定の PDB ファイルに対して複数の解析スクリプトを実行し、その結果に基づいて ProteinMPNN の入力を準備する Bash スクリプトです。このスクリプトは、主に構造データから特定の特徴を抽出し、後続の処理のためにそれらを準備します。
+`gen.sh` は、切り出されたPDB ファイルに対しRFdiffusionのMotif Scaffoldingを実行し、
+
+その結果に基づいて ProteinMPNN の入力を準備する Bash スクリプトです。このスクリプトは、主に構造データから特定の特徴を抽出し、後続の処理のためにそれらを準備します。
 
 ## 依存関係
+
+- RFdiffusion: 
+
+https://github.com/RosettaCommons/RFdiffusion
+
+https://github.com/RosettaCommons/RFdiffusion/issues/14
+
+https://github.com/truatpasteurdotfr/RFdiffusion/tree/main/env
+
+- ProteinMPNN
+
+https://github.com/dauparas/ProteinMPNN
+
+
 `gen.sh` は以下の Python スクリプトを実行しますので、これらのスクリプトが事前に適切な場所に設置されている必要があります:
 
 - `input_recog.py`: PDBファイルを解析し、関連する特性を抽出します。
