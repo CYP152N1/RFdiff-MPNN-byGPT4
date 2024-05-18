@@ -63,4 +63,8 @@ Ensure that these scripts are located in the same directory as `gen.sh` or in a 
 To run the `gen.sh` script, use the following command format from the command line:
 
 ```bash
+git clone https://github.com/CYP152N1/RFdiff-MPNN-byGPT4
+cd RFdiff-MPNN-byGPT4
 ./gen.sh path_to_your_pdb_file.pdb
+
+```
