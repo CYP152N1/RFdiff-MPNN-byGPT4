@@ -25,11 +25,12 @@ https://github.com/dauparas/ProteinMPNN
 
 ## セットアップ
 
-1. 必要なライブラリと依存関係をインストールします。
-2. 以下のパスを確認し、必要に応じてスクリプト内でパスを更新してください：
-   - `RFDIFFUSION_PATH`
-   - `PROTEINMPNN_PATH`
-   - `GENSH_PATH`
+1. RFdiffusionとProteinMPNN依存関係をインストールします。
+2. git clone https://github.com/CYP152N1/RFdiff-MPNN-byGPT4
+3. このスクリプトとRFdiffusionとProteinMPNNパスを確認し、gen.shのスクリプト内でパスを更新してください
+   - RFDIFFUSION_PATH=/pass/to/RFdiffusion
+   - PROTEINMPNN_PATH=/pass/to/ProteinMPNN
+   - GENSH_PATH=/pass/to/RFdiff-MPNN-byGPT4
 
 ## 使用方法
 
