@@ -12,9 +12,13 @@
 これらのスクリプトが `gen.sh` の冒頭で指定するディレクトリに配置されていることを確認してください。
 
 RFDIFFUSION_PATH=/path/to/RFdiffusion
+
 PROTEINMPNN_PATH=/path/to//ProteinMPNN
+
 GENSH_PATH=/path/to/the/script/RFdiff-MPNN-byGPT4
+
 RFDIFF_num_designs=4
+
 MPNN_num_seq=5
 
 ## 使用方法
