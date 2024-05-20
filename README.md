@@ -1,7 +1,3 @@
-ご提供いただいた`gen.sh`スクリプトに基づいてREADMEを再編集します。以下の内容でどうでしょうか？
-
----
-
 # RFdiffusion Script
 
 このスクリプトは、タンパク質構造に基づいて新しいデザインを生成するために、RFdiffusionとProteinMPNNを利用します。指定されたPDBファイルから開始し、必要なデータを準備した後、複数の推論ステップを経て、タンパク質の新しい配列と構造を設計します。
@@ -11,6 +7,8 @@
 - 事前にインストールされたRFdiffusionとProteinMPNN
 - 切り出されたタンパク質構造ファイル（.pdb形式）
 - Biopythonライブラリ
+- matplotlibライブラリ
+- pandasライブラリ
 
 ## 依存関係
 
@@ -56,6 +54,7 @@
 ./gen.sh -p /path/to/your/input.pdb -nd 2 -ns 2
 ```
 
+#### Pythonスクリプトの説明
 
 - `align_pdb.py`: 指定されたタンパク質構造のアラインメントを行い、統計情報を計算してCSVファイルに出力します。
 - `input_recog.py`: 入力されたPDBファイルを解析し、タンパク質の特性を抽出し、後続のステップで利用するデータを準備します。
@@ -73,13 +72,5 @@ https://github.com/RosettaCommons/RFdiffusion/issues/14
 
 https://github.com/truatpasteurdotfr/RFdiffusion/tree/main/env
 
-
-#### Pythonスクリプトの説明
-
-- `align_pdb.py`: 指定されたタンパク質構造のアラインメントを行い、統計情報を計算してCSVファイルに出力します。
-- `input_recog.py`: 入力されたPDBファイルを解析し、タンパク質の特性を抽出し、後続のステップで利用するデータを準備します。
-- `MPNN-prep.py`: ProteinMPNNを使用するためのデータを準備します。抽出された特性に基づいて、タンパク質のデザインデータを整形し、必要な情報を提供します。
-- `pae_calculation.py`: Predicated Aligned Error (PAE) の計算を行い、結果を分析してCSVファイルに保存します。このスクリプトは、タンパク質のアラインメントエラーを解析し、その結果を評価するために使用されます。
-- `scatter_plot.py`: CSVファイルのデータを基にして、グラフィカルな解析結果を生成します。RMSDとtPAEの関係を2次元散布図で示し、さらに詳細な分析を提供します。
 
 
