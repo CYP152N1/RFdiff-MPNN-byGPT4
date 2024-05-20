@@ -1,13 +1,21 @@
 #!/bin/bash
-RFDIFFUSION_PATH=/pass/to/RFdiffusion
-PROTEINMPNN_PATH=/pass/to/ProteinMPNN
-GENSH_PATH=/pass/to/RFdiff-MPNN-byGPT4
+RFDIFFUSION_PATH=/home/mdonoda/data/RFdiffusion//RFdiffusion
+PROTEINMPNN_PATH=/home/mdonoda/data/RFdiffusion/ProteinMPNN
+GENSH_PATH=/home/mdonoda/data/RFdiffusion/Gensh
+#RFdiffusion
 RFDIFF_num_designs=2  # Default value for number of designs
 MPNN_num_seq=2        # Default value for number of sequences
 custom_output=""      # Default value, auto-generated from PDB unless specified
 linker_range="10-40"  # Default linker range
 remove_n=false        # Option to remove the initial linker
 remove_c=false        # Option to remove the final linker
+#ColabFold
+num_recycle=3
+rank="auto"
+save_recycles=false
+sort_queries_by="length"
+recycle_early_stop_tolerance=0
+num_models=1
 
 # Process command line arguments manually
 while [[ $# -gt 0 ]]; do
@@ -32,13 +40,33 @@ while [[ $# -gt 0 ]]; do
             linker_range="$2"
             shift 2
             ;;
-        -rn)
+        -rn|--remove_n_ter)
             remove_n=true
             shift
             ;;
-        -rc)
+        -rc|--remove_c_ter)
             remove_c=true
             shift
+            ;;
+        -nm|--num-models)
+            num_models="$2"
+            shift 2
+            ;;
+        -nr|--num-recycle)
+            num_recycle="$2"
+            shift 2
+            ;;
+        -tol|--recycle-early-stop-tolerance)
+            recycle_early_stop_tolerance="$2"
+            shift 2
+            ;;
+        --rank)
+            rank="$2"
+            shift 2
+            ;;
+        --sort-queries-by)
+            sort_queries_by="$2"
+            shift 2
             ;;
         *)
             shift
@@ -46,11 +74,23 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-echo "PDB Path: $input_pdb_path"
-echo "Remove N: $remove_n"
-echo "Remove C: $remove_c"
-echo "Linker Range: $linker_range"
-echo "Command Args: $command_args"
+# Display all variables
+echo "RFDIFFUSION_PATH: $RFDIFFUSION_PATH"
+echo "PROTEINMPNN_PATH: $PROTEINMPNN_PATH"
+echo "GENSH_PATH: $GENSH_PATH"
+echo "RFDIFF_num_designs: $RFDIFF_num_designs"
+echo "MPNN_num_seq: $MPNN_num_seq"
+echo "Custom output: $custom_output"
+echo "Linker range: $linker_range"
+echo "Remove N terminal: $remove_n"
+echo "Remove C terminal: $remove_c"
+echo "Num recycle: $num_recycle"
+echo "Rank: $rank"
+echo "Save recycles: $save_recycles"
+echo "Sort queries by: $sort_queries_by"
+echo "Recycle early stop tolerance: $recycle_early_stop_tolerance"
+echo "Num models: $num_models"
+echo "Input PDB path: $input_pdb_path"
 
 # Validate mandatory PDB path
 if [[ -z "$input_pdb_path" ]]; then
@@ -204,25 +244,78 @@ echo "Processing .fa files for ProteinMPNN in $output_mpnn_dir and saving to $fa
 for fa_file in $(find "$output_mpnn_dir" -name '*.fa'); do
     fa_basename=$(basename "$fa_file" .fa)
 
-    # .faファイルを解析し、各サンプルに対して新しいファイルを作成
     awk -v out_dir="$fasta_output_dir" -v base_name="$fa_basename" '
+    BEGIN { filename = "default.fasta" }  # 初期ファイル名を設定
     /^>/ {
-        if (seq) print seq > filename
-        sample = gensub(/^.*sample=([0-9]+).*$/, "\\1", "g", $0)
-        filename = sprintf("%s/%s_seq_%s.fasta", out_dir, base_name, sample)
-        print ">" base_name > filename
-        seq = ""
-        next
+        if (seq) print seq > filename  # 前のシーケンスをファイルに書き込む
+        seq = ""  # シーケンスをリセット
+        if (/sample=/) {
+            sample = gensub(/^.*sample=([0-9]+).*$/, "\\1", "g", $0)
+            filename = sprintf("%s/%s_seq_%s.fasta", out_dir, base_name, sample)
+            print ">" base_name " sample " sample > filename
+        }
     }
-    {
-        seq = seq $0
+    /^[^>]/ {
+        seq = seq $0  # シーケンスデータを追加
     }
     END {
-        if (seq) print seq > filename
+        if (seq) print seq > filename  # 最後のシーケンスをファイルに書き込む
     }' "$fa_file"
 done
 
+
 echo "Fasta files have been prepared and saved to $fasta_output_dir."
 
-#colabfold_batch $fasta_output_dir $colab_output_dir
-#cp ${colab_output_dir}/*.pdb ${pdb_output_dir}
+# ColabFoldの実行
+colabfold_batch --num-recycle $num_recycle --recycle-early-stop-tolerance $recycle_early_stop_tolerance --num-models $num_models --rank $rank --sort-queries-by $sort_queries_by $fasta_output_dir $colab_output_dir
+
+# Initialize default values
+RFDIFF_num_designs=2  # Default number of designs
+MPNN_num_seq=2        # Default number of sequences
+
+# Process command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -p|--pdb)
+            input_pdb_path="$2"
+            shift 2
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+# Extract the base name without the '.pdb' extension
+pdb_prefix=$(basename "$input_pdb_path" .pdb)
+
+# Define paths using the extracted prefix
+colabfold_dir="output/$pdb_prefix/colabfold"
+rfdiffusion_dir="output/$pdb_prefix/RFdiffusion/$(date +%Y-%m-%d)"
+output_dir="output/$pdb_prefix/aligned_pdbs"
+mkdir -p $output_dir
+
+# Loop through sequences based on the number of designs and sequences
+for ((i=0; i<$RFDIFF_num_designs; i++)); do
+    ref_pdb="${rfdiffusion_dir}/${pdb_prefix}_${i}/${pdb_prefix}_${i}.pdb"
+    for ((j=1; j<=$MPNN_num_seq; j++)); do
+        target_pdb="${colabfold_dir}/${pdb_prefix}_${i}_seq_${j}_unrelaxed_rank_001_alphafold2_ptm_model_1_seed_000.pdb"
+        json_path="${colabfold_dir}/${pdb_prefix}_${i}_seq_${j}_predicted_aligned_error_v1.json"
+        output_pdb="${output_dir}/${pdb_prefix}_${i}_seq_${j}_aligned.pdb"
+        
+        # Check if both PDB and JSON files exist
+        if [ -f "$ref_pdb" ] && [ -f "$target_pdb" ] && [ -f "$json_path" ]; then
+            # Call the alignment Python script
+            python3 "${GENSH_PATH}/align_pdb.py" "$ref_pdb" "$target_pdb" "$output_pdb" ${pdb_prefix} ${i} ${j}
+            # Call the PAE calculation Python script
+            python3 "${GENSH_PATH}/pae_calculation.py" "$ref_pdb" "$json_path" ${pdb_prefix} ${i} ${j}
+        else
+            echo "Error: Required file(s) not found."
+            echo "Ref PDB: $ref_pdb"
+            echo "Target PDB: $target_pdb"
+            echo "JSON Path: $json_path"
+        fi
+    done
+done
+
+python3 "${GENSH_PATH}/scatter_plot.py ${pdb_prefix}
