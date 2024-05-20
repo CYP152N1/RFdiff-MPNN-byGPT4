@@ -1,7 +1,7 @@
 #!/bin/bash
-RFDIFFUSION_PATH=/home/mdonoda/data/RFdiffusion//RFdiffusion
-PROTEINMPNN_PATH=/home/mdonoda/data/RFdiffusion/ProteinMPNN
-GENSH_PATH=/home/mdonoda/data/RFdiffusion/Gensh
+RFDIFFUSION_PATH=path/to/RFdiffusion
+PROTEINMPNN_PATH=path/to/ProteinMPNN
+GENSH_PATH=path/to/Gensh
 #RFdiffusion
 RFDIFF_num_designs=2  # Default value for number of designs
 MPNN_num_seq=2        # Default value for number of sequences
