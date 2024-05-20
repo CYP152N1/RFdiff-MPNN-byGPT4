@@ -18,7 +18,7 @@
 ## セットアップ
 
 1. 必要なライブラリと依存関係をインストールします。
-2. スクリプト内で以下のパスを確認し、必要に応じて更新してください：
+2. gen.shスクリプト内で以下のパスを確認し、必要に応じて更新してください：
    - `RFDIFFUSION_PATH`
    - `PROTEINMPNN_PATH`
    - `GENSH_PATH`
@@ -51,7 +51,7 @@
 以下のコマンドは、入力PDBファイルを指定し、2つの新しいデザインとシーケンスを生成します：
 
 ```bash
-./gen.sh -p /path/to/your/input.pdb -nd 2 -ns 2
+path/to/gen.sh -p /path/to/your/input.pdb -nd 2 -ns 2
 ```
 
 #### Pythonスクリプトの説明
