@@ -40,9 +40,9 @@
 - `-l|--linker`: リンカーの範囲（デフォルトは "10-40"）
 - `-rn|--remove_n_ter`: 最初のリンカーを除去（オプション）
 - `-rc|--remove_c_ter`: 最後のリンカーを除去（オプション）
-- `-nm|--num-models`: 生成するモデルの数（デフォルトは1）
+- `-nm|--num-models`: 生成するモデルの数（デフォルトは1　※現在1のみ解析対応）
 - `-nr|--num-recycle`: リサイクル回数（デフォルトは3）
-- `-tol|--recycle-early-stop-tolerance`: 早期停止の許容範囲
+- `-tol|--recycle-early-stop-tolerance`: 早期停止の許容範囲（デフォルトは0.0）
 - `--rank`: モデルのランキング方法（デフォルトはauto）
 - `--sort-queries-by`: クエリの並べ替え方法（デフォルトはlength）
 
