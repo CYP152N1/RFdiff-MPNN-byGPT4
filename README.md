@@ -60,7 +60,11 @@ path/to/gen.sh -p /path/to/your/input.pdb -nd 2 -ns 2
 - `input_recog.py`: 入力されたPDBファイルを解析し、タンパク質の特性を抽出し、後続のステップで利用するデータを準備します。
 - `MPNN-prep.py`: ProteinMPNNを使用するためのデータを準備します。抽出された特性に基づいて、タンパク質のデザインデータを整形し、必要な情報を提供します。
 - `pae_calculation.py`: Predicated Aligned Error (PAE) の計算を行い、結果を分析してCSVファイルに保存します。このスクリプトは、タンパク質のアラインメントエラーを解析し、その結果を評価するために使用されます。
+
 - `scatter_plot.py`: CSVファイルのデータを基にして、グラフィカルな解析結果を生成します。RMSDとtPAEの関係を2次元散布図で示し、さらに詳細な分析を提供します。
+![RMSDvsPAE](https://github.com/CYP152N1/RFdiff-MPNN-byGPT4/assets/87903303/056cd5f2-776b-4be3-894c-8ed21669c5f2)
+[merged_data.csv](https://github.com/CYP152N1/RFdiff-MPNN-byGPT4/files/15376995/merged_data.csv)
+
 
 ## トラブルシューティング
 
