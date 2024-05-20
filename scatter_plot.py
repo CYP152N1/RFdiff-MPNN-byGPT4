@@ -10,6 +10,9 @@ def plot_scatter_from_csv(align_csv_path, pae_stats_csv_path, prefix):
     # データフレームを結合
     df = pd.merge(align_df, pae_stats_df, on=['model', 'seq'])
 
+    # 結合したデータフレームをCSVに保存
+    df.to_csv(f"{prefix}_merged_data.csv", index=False)
+
     # カラーマップをリバースに設定
     cmap = plt.cm.CMRmap_r
 
