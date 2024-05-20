@@ -234,10 +234,8 @@ done
 output_mpnn_dir="$(pwd)/output/$pdb_prefix/ProteinMPNN/$current_date"
 fasta_output_dir="$(pwd)/output/$pdb_prefix/fasta"
 colab_output_dir="$(pwd)/output/$pdb_prefix/colabfold"
-pdb_output_dir="$(pwd)/output/$pdb_prefix/pdb"
 # fasta ディレクトリの作成
 mkdir -p "$fasta_output_dir"
-mkdir -p "$pdb_output_dir"
 
 # 最後に、ProteinMPNN用に.faファイルを解析し、個別のファイルに分割する
 echo "Processing .fa files for ProteinMPNN in $output_mpnn_dir and saving to $fasta_output_dir..."
