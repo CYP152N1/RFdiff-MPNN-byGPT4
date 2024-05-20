@@ -1,7 +1,7 @@
 #!/bin/bash
-RFDIFFUSION_PATH=path/to/RFdiffusion
-PROTEINMPNN_PATH=path/to/ProteinMPNN
-GENSH_PATH=path/to/Gensh
+RFDIFFUSION_PATH=/home/mdonoda/data/RFdiffusion//RFdiffusion
+PROTEINMPNN_PATH=/home/mdonoda/data/RFdiffusion/ProteinMPNN
+GENSH_PATH=/home/mdonoda/data/RFdiffusion/Gensh
 #RFdiffusion
 RFDIFF_num_designs=2  # Default value for number of designs
 MPNN_num_seq=2        # Default value for number of sequences
@@ -9,6 +9,7 @@ custom_output=""      # Default value, auto-generated from PDB unless specified
 linker_range="10-40"  # Default linker range
 remove_n=false        # Option to remove the initial linker
 remove_c=false        # Option to remove the final linker
+run_colabfold=true    # Default is to run ColabFold
 #ColabFold
 num_recycle=3
 rank="auto"
@@ -67,6 +68,10 @@ while [[ $# -gt 0 ]]; do
         --sort-queries-by)
             sort_queries_by="$2"
             shift 2
+            ;;
+        -nocf|--no-colabfold)
+            run_colabfold=false
+            shift
             ;;
         *)
             shift
@@ -263,57 +268,56 @@ done
 
 
 echo "Fasta files have been prepared and saved to $fasta_output_dir."
-
+    
 # ColabFoldの実行
-colabfold_batch --num-recycle $num_recycle --recycle-early-stop-tolerance $recycle_early_stop_tolerance --num-models $num_models --rank $rank --sort-queries-by $sort_queries_by $fasta_output_dir $colab_output_dir
+if [[ "$run_colabfold" == "true" ]]; then
+    echo "Running ColabFold..."
+    colabfold_batch --num-recycle $num_recycle --recycle-early-stop-tolerance $recycle_early_stop_tolerance --num-models $num_models --rank $rank --sort-queries-by $sort_queries_by $fasta_output_dir $colab_output_dir
 
-# Initialize default values
-RFDIFF_num_designs=2  # Default number of designs
-MPNN_num_seq=2        # Default number of sequences
-
-# Process command line arguments
-while [[ $# -gt 0 ]]; do
-    case $1 in
-        -p|--pdb)
-            input_pdb_path="$2"
-            shift 2
-            ;;
-        *)
-            shift
-            ;;
-    esac
-done
-
-# Extract the base name without the '.pdb' extension
-pdb_prefix=$(basename "$input_pdb_path" .pdb)
-
-# Define paths using the extracted prefix
-colabfold_dir="output/$pdb_prefix/colabfold"
-rfdiffusion_dir="output/$pdb_prefix/RFdiffusion/$(date +%Y-%m-%d)"
-output_dir="output/$pdb_prefix/aligned_pdbs"
-mkdir -p $output_dir
-
-# Loop through sequences based on the number of designs and sequences
-for ((i=0; i<$RFDIFF_num_designs; i++)); do
-    ref_pdb="${rfdiffusion_dir}/${pdb_prefix}_${i}/${pdb_prefix}_${i}.pdb"
-    for ((j=1; j<=$MPNN_num_seq; j++)); do
-        target_pdb="${colabfold_dir}/${pdb_prefix}_${i}_seq_${j}_unrelaxed_rank_001_alphafold2_ptm_model_1_seed_000.pdb"
-        json_path="${colabfold_dir}/${pdb_prefix}_${i}_seq_${j}_predicted_aligned_error_v1.json"
-        output_pdb="${output_dir}/${pdb_prefix}_${i}_seq_${j}_aligned.pdb"
-        
-        # Check if both PDB and JSON files exist
-        if [ -f "$ref_pdb" ] && [ -f "$target_pdb" ] && [ -f "$json_path" ]; then
-            # Call the alignment Python script
-            python3 "${GENSH_PATH}/align_pdb.py" "$ref_pdb" "$target_pdb" "$output_pdb" ${pdb_prefix} ${i} ${j}
-            # Call the PAE calculation Python script
-            python3 "${GENSH_PATH}/pae_calculation.py" "$ref_pdb" "$json_path" ${pdb_prefix} ${i} ${j}
-        else
-            echo "Error: Required file(s) not found."
-            echo "Ref PDB: $ref_pdb"
-            echo "Target PDB: $target_pdb"
-            echo "JSON Path: $json_path"
-        fi
+    # Process command line arguments
+    while [[ $# -gt 0 ]]; do
+        case $1 in
+            -p|--pdb)
+                input_pdb_path="$2"
+                shift 2
+                ;;
+            *)
+                shift
+                ;;
+        esac
     done
-done
 
-python3 "${GENSH_PATH}/scatter_plot.py ${pdb_prefix}
+    # Extract the base name without the '.pdb' extension
+    pdb_prefix=$(basename "$input_pdb_path" .pdb)
+
+    # Define paths using the extracted prefix
+    colabfold_dir="output/$pdb_prefix/colabfold"
+    rfdiffusion_dir="output/$pdb_prefix/RFdiffusion/$(date +%Y-%m-%d)"
+    output_dir="output/$pdb_prefix/aligned_pdbs"
+    mkdir -p $output_dir
+
+    # Loop through sequences based on the number of designs and sequences
+    for ((i=0; i<$RFDIFF_num_designs; i++)); do
+        ref_pdb="${rfdiffusion_dir}/${pdb_prefix}_${i}/${pdb_prefix}_${i}.pdb"
+        for ((j=1; j<=$MPNN_num_seq; j++)); do
+            target_pdb="${colabfold_dir}/${pdb_prefix}_${i}_seq_${j}_unrelaxed_rank_001_alphafold2_ptm_model_1_seed_000.pdb"
+            json_path="${colabfold_dir}/${pdb_prefix}_${i}_seq_${j}_predicted_aligned_error_v1.json"
+            output_pdb="${output_dir}/${pdb_prefix}_${i}_seq_${j}_aligned.pdb"
+            
+            # Check if both PDB and JSON files exist
+            if [ -f "$ref_pdb" ] && [ -f "$target_pdb" ] && [ -f "$json_path" ]; then
+                # Call the alignment Python script
+                python3 "${GENSH_PATH}/align_pdb.py" "$ref_pdb" "$target_pdb" "$output_pdb" ${pdb_prefix} ${i} ${j}
+                # Call the PAE calculation Python script
+                python3 "${GENSH_PATH}/pae_calculation.py" "$ref_pdb" "$json_path" ${pdb_prefix} ${i} ${j}
+            else
+                echo "Error: Required file(s) not found."
+                echo "Ref PDB: $ref_pdb"
+                echo "Target PDB: $target_pdb"
+                echo "JSON Path: $json_path"
+            fi
+        done
+    done
+
+    python3 "${GENSH_PATH}/scatter_plot.py" "${pdb_prefix}"
+fi
