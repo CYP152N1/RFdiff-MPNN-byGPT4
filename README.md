@@ -70,12 +70,5 @@ https://github.com/RosettaCommons/RFdiffusion/issues/14
 https://github.com/truatpasteurdotfr/RFdiffusion/tree/main/env
 
 
-#### Pythonスクリプトの説明
-
-- `align_pdb.py`: 指定されたタンパク質構造のアラインメントを行い、統計情報を計算してCSVファイルに出力します。
-- `input_recog.py`: 入力されたPDBファイルを解析し、タンパク質の特性を抽出し、後続のステップで利用するデータを準備します。
-- `MPNN-prep.py`: ProteinMPNNを使用するためのデータを準備します。抽出された特性に基づいて、タンパク質のデザインデータを整形し、必要な情報を提供します。
-- `pae_calculation.py`: Predicated Aligned Error (PAE) の計算を行い、結果を分析してCSVファイルに保存します。このスクリプトは、タンパク質のアラインメントエラーを解析し、その結果を評価するために使用されます。
-- `scatter_plot.py`: CSVファイルのデータを基にして、グラフィカルな解析結果を生成します。RMSDとtPAEの関係を2次元散布図で示し、さらに詳細な分析を提供します。
 
 
