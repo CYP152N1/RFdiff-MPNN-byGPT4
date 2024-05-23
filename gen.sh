@@ -1,7 +1,7 @@
 #!/bin/bash
-RFDIFFUSION_PATH=/pass/to/RFdiffusion
-PROTEINMPNN_PATH=/pass/to/ProteinMPNN
-GENSH_PATH=/pass/to/Gensh
+RFDIFFUSION_PATH=/path/to/RFdiffusion
+PROTEINMPNN_PATH=/path/to/ProteinMPNN
+GENSH_PATH=/path/to/Gensh
 #RFdiffusion
 RFDIFF_num_designs=2  # Default value for number of designs
 MPNN_num_seq=2        # Default value for number of sequences
@@ -115,8 +115,8 @@ current_date=$(date +%Y-%m-%d)
 pdb_prefix=$(basename "$input_pdb_path" .pdb)
 
 # Set up the output directory path
-output_pref="$(pwd)/output/$pdb_prefix/RFdiffusion/$current_date/$pdb_prefix"
-output_dir="$(pwd)/output/$pdb_prefix/RFdiffusion/$current_date"
+output_pref="$(pwd)/output/$pdb_prefix/RFdiffusion/$pdb_prefix"
+output_dir="$(pwd)/output/$pdb_prefix/RFdiffusion"
 
 # コマンド引数の構築
 command_args=""
@@ -193,7 +193,7 @@ do
         fixed_positions=$(python3 "${GENSH_PATH}"/MPNN-prep.py "$dir_name/$(basename "$file")")
 
         # Generate and execute a script for ProteinMPNN
-        protein_mpnn_output_dir="$(pwd)/output/$pdb_prefix/ProteinMPNN/$current_date/$(basename "$dir_name")"
+        protein_mpnn_output_dir="$(pwd)/output/$pdb_prefix/ProteinMPNN/$(basename "$dir_name")"
         mkdir -p "$protein_mpnn_output_dir"
         cat <<MPNNEOF > "${dir_name}/generated_script.sh"
 #!/bin/bash
@@ -236,7 +236,7 @@ MPNNEOF
 done
 
 # 出力ディレクトリのパスを設定
-output_mpnn_dir="$(pwd)/output/$pdb_prefix/ProteinMPNN/$current_date"
+output_mpnn_dir="$(pwd)/output/$pdb_prefix/ProteinMPNN"
 fasta_output_dir="$(pwd)/output/$pdb_prefix/fasta"
 colab_output_dir="$(pwd)/output/$pdb_prefix/colabfold"
 # fasta ディレクトリの作成
@@ -292,7 +292,7 @@ if [[ "$run_colabfold" == "true" ]]; then
 
     # Define paths using the extracted prefix
     colabfold_dir="output/$pdb_prefix/colabfold"
-    rfdiffusion_dir="output/$pdb_prefix/RFdiffusion/$(date +%Y-%m-%d)"
+    rfdiffusion_dir="output/$pdb_prefix/RFdiffusion/"
     output_dir="output/$pdb_prefix/aligned_pdbs"
     mkdir -p $output_dir
 
