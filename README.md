@@ -7,6 +7,8 @@
 - 事前にインストールされたRFdiffusionとProteinMPNN
 - 切り出されたタンパク質構造ファイル（.pdb形式）
 - Biopythonライブラリ
+- matplotlibライブラリ
+- pandasライブラリ
 
 ## 依存関係
 
@@ -16,7 +18,7 @@
 ## セットアップ
 
 1. 必要なライブラリと依存関係をインストールします。
-2. スクリプト内で以下のパスを確認し、必要に応じて更新してください：
+2. gen.shスクリプト内で以下のパスを確認し、必要に応じて更新してください：
    - `RFDIFFUSION_PATH`
    - `PROTEINMPNN_PATH`
    - `GENSH_PATH`
@@ -38,9 +40,9 @@
 - `-l|--linker`: リンカーの範囲（デフォルトは "10-40"）
 - `-rn|--remove_n_ter`: 最初のリンカーを除去（オプション）
 - `-rc|--remove_c_ter`: 最後のリンカーを除去（オプション）
-- `-nm|--num-models`: 生成するモデルの数（デフォルトは1）
+- `-nm|--num-models`: 生成するモデルの数（デフォルトは1　※現在1のみ解析対応）
 - `-nr|--num-recycle`: リサイクル回数（デフォルトは3）
-- `-tol|--recycle-early-stop-tolerance`: 早期停止の許容範囲
+- `-tol|--recycle-early-stop-tolerance`: 早期停止の許容範囲（デフォルトは0.0）
 - `--rank`: モデルのランキング方法（デフォルトはauto）
 - `--sort-queries-by`: クエリの並べ替え方法（デフォルトはlength）
 
@@ -49,15 +51,22 @@
 以下のコマンドは、入力PDBファイルを指定し、2つの新しいデザインとシーケンスを生成します：
 
 ```bash
-./gen.sh -p /path/to/your/input.pdb -nd 2 -ns 2
+path/to/gen.sh -p /path/to/your/input.pdb -nd 2 -ns 2
 ```
 
+#### Pythonスクリプトの説明
 
 - `align_pdb.py`: 指定されたタンパク質構造のアラインメントを行い、統計情報を計算してCSVファイルに出力します。
 - `input_recog.py`: 入力されたPDBファイルを解析し、タンパク質の特性を抽出し、後続のステップで利用するデータを準備します。
 - `MPNN-prep.py`: ProteinMPNNを使用するためのデータを準備します。抽出された特性に基づいて、タンパク質のデザインデータを整形し、必要な情報を提供します。
 - `pae_calculation.py`: Predicated Aligned Error (PAE) の計算を行い、結果を分析してCSVファイルに保存します。このスクリプトは、タンパク質のアラインメントエラーを解析し、その結果を評価するために使用されます。
+
 - `scatter_plot.py`: CSVファイルのデータを基にして、グラフィカルな解析結果を生成します。RMSDとtPAEの関係を2次元散布図で示し、さらに詳細な分析を提供します。
+
+![RMSDvsPAE](https://github.com/CYP152N1/RFdiff-MPNN-byGPT4/assets/87903303/056cd5f2-776b-4be3-894c-8ed21669c5f2)
+
+[merged_data.csv](https://github.com/CYP152N1/RFdiff-MPNN-byGPT4/files/15376995/merged_data.csv)
+
 
 ## トラブルシューティング
 
@@ -68,7 +77,6 @@ RFdiffusionのインストールに問題がある場合は、下記を参照し
 https://github.com/RosettaCommons/RFdiffusion/issues/14
 
 https://github.com/truatpasteurdotfr/RFdiffusion/tree/main/env
-
 
 
 
