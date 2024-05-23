@@ -6,9 +6,9 @@
 
 - 事前にインストールされたRFdiffusionとProteinMPNN
 - 切り出されたタンパク質構造ファイル（.pdb形式）
-- Biopythonライブラリ
-- matplotlibライブラリ
-- pandasライブラリ
+- Biopythonライブラリ (pip install BioPython)
+- matplotlibライブラリ (pip install matplotlib)
+- pandasライブラリ (pip install pandas)
 
 ## 依存関係
 
