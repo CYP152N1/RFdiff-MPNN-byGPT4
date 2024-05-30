@@ -1,7 +1,10 @@
 #!/bin/bash
+#PATH
 RFDIFFUSION_PATH=/path/to/RFdiffusion
 PROTEINMPNN_PATH=/path/to/ProteinMPNN
-GENSH_PATH=/path/to/Gensh
+GENSH_PATH=/path/to/RFdiff-MPNN-byGPT4
+CONDA_PATH=/path/to/conda/envs/your_environment_name
+
 #RFdiffusion
 RFDIFF_num_designs=2  # Default value for number of designs
 MPNN_num_seq=2        # Default value for number of sequences
@@ -83,6 +86,7 @@ done
 echo "RFDIFFUSION_PATH: $RFDIFFUSION_PATH"
 echo "PROTEINMPNN_PATH: $PROTEINMPNN_PATH"
 echo "GENSH_PATH: $GENSH_PATH"
+echo "CONDA_PATH: $CONDA_PATH"
 echo "RFDIFF_num_designs: $RFDIFF_num_designs"
 echo "MPNN_num_seq: $MPNN_num_seq"
 echo "Custom output: $custom_output"
@@ -134,7 +138,7 @@ if [[ -n "$custom_output" ]]; then
     output="$custom_output"
 else
     # custom_outputが指定されていない場合、Pythonスクリプトを実行
-    output=$(python3 "${GENSH_PATH}"/input_recog.py "$input_pdb_path" $command_args)
+    output=$("${CONDA_PATH}"/bin/python "${GENSH_PATH}"/input_recog.py "$input_pdb_path" $command_args)
     if [ $? -ne 0 ]; then
         echo "Error: Python script execution failed."
         exit 1
@@ -155,7 +159,7 @@ cat <<EOF > run_inference.sh
 # conda info -e等で読み込むconda環境の名前を確認してください。
 # 環境構築がうまく行かない場合は参照: https://github.com/RosettaCommons/RFdiffusion/issues/14
 
-${RFDIFFUSION_PATH}/scripts/run_inference.py inference.output_prefix=$output_pref 'contigmap.contigs=[$output]' inference.input_pdb=$input_pdb_path inference.num_designs=$RFDIFF_num_designs
+${CONDA_PATH}/bin/python ${RFDIFFUSION_PATH}/scripts/run_inference.py inference.output_prefix=$output_pref 'contigmap.contigs=[$output]' inference.input_pdb=$input_pdb_path inference.num_designs=$RFDIFF_num_designs
 EOF
 
 # 生成したシェルスクリプトを実行可能にします。
@@ -190,7 +194,7 @@ do
 
         # Run Python script to prepare data for ProteinMPNN
         echo "Preparing data for ProteinMPNN with: $dir_name/$(basename "$file")"
-        fixed_positions=$(python3 "${GENSH_PATH}"/MPNN-prep.py "$dir_name/$(basename "$file")")
+        fixed_positions=$("${CONDA_PATH}"/bin/python "${GENSH_PATH}"/MPNN-prep.py "$dir_name/$(basename "$file")")
 
         # Generate and execute a script for ProteinMPNN
         protein_mpnn_output_dir="$(pwd)/output/$pdb_prefix/ProteinMPNN/$(basename "$dir_name")"
@@ -212,10 +216,10 @@ chains_to_design="A"
 fixed_positions="$fixed_positions"
 
 # Run ProteinMPNN helper scripts and main script
-python ${PROTEINMPNN_PATH}//helper_scripts/parse_multiple_chains.py --input_path=\$folder_with_pdbs --output_path=\$path_for_parsed_chains
-python ${PROTEINMPNN_PATH}//helper_scripts/assign_fixed_chains.py --input_path=\$path_for_parsed_chains --output_path=\$path_for_assigned_chains --chain_list "\$chains_to_design"
-python ${PROTEINMPNN_PATH}/helper_scripts/make_fixed_positions_dict.py --input_path=\$path_for_parsed_chains --output_path=\$path_for_fixed_positions --chain_list "\$chains_to_design" --position_list "\$fixed_positions"
-python ${PROTEINMPNN_PATH}/protein_mpnn_run.py \
+${CONDA_PATH}/bin/python ${PROTEINMPNN_PATH}//helper_scripts/parse_multiple_chains.py --input_path=\$folder_with_pdbs --output_path=\$path_for_parsed_chains
+${CONDA_PATH}/bin/python ${PROTEINMPNN_PATH}//helper_scripts/assign_fixed_chains.py --input_path=\$path_for_parsed_chains --output_path=\$path_for_assigned_chains --chain_list "\$chains_to_design"
+${CONDA_PATH}/bin/python ${PROTEINMPNN_PATH}/helper_scripts/make_fixed_positions_dict.py --input_path=\$path_for_parsed_chains --output_path=\$path_for_fixed_positions --chain_list "\$chains_to_design" --position_list "\$fixed_positions"
+${CONDA_PATH}/bin/python ${PROTEINMPNN_PATH}/protein_mpnn_run.py \
         --jsonl_path \$path_for_parsed_chains \
         --chain_id_jsonl \$path_for_assigned_chains \
         --fixed_positions_jsonl \$path_for_fixed_positions \
@@ -307,9 +311,9 @@ if [[ "$run_colabfold" == "true" ]]; then
             # Check if both PDB and JSON files exist
             if [ -f "$ref_pdb" ] && [ -f "$target_pdb" ] && [ -f "$json_path" ]; then
                 # Call the alignment Python script
-                python3 "${GENSH_PATH}/align_pdb.py" "$ref_pdb" "$target_pdb" "$output_pdb" ${pdb_prefix} ${i} ${j}
+                ${CONDA_PATH}/bin/python "${GENSH_PATH}/align_pdb.py" "$ref_pdb" "$target_pdb" "$output_pdb" ${pdb_prefix} ${i} ${j}
                 # Call the PAE calculation Python script
-                python3 "${GENSH_PATH}/pae_calculation.py" "$ref_pdb" "$json_path" ${pdb_prefix} ${i} ${j}
+                ${CONDA_PATH}/bin/python "${GENSH_PATH}/pae_calculation.py" "$ref_pdb" "$json_path" ${pdb_prefix} ${i} ${j}
             else
                 echo "Error: Required file(s) not found."
                 echo "Ref PDB: $ref_pdb"
@@ -319,5 +323,5 @@ if [[ "$run_colabfold" == "true" ]]; then
         done
     done
 
-    python3 "${GENSH_PATH}/scatter_plot.py" "${pdb_prefix}"
+    ${CONDA_PATH}/bin/python "${GENSH_PATH}/scatter_plot.py" "${pdb_prefix}"
 fi
