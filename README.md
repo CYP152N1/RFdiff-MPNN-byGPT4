@@ -19,9 +19,11 @@
 
 1. 必要なライブラリと依存関係をインストールします。
 2. gen.shスクリプト内で以下のパスを確認し、必要に応じて更新してください：
+3. もしくは、condition.shを環境に合わせてに変更し、update_gen.shを実行するとgen.shが書き換わります。
    - `RFDIFFUSION_PATH`
    - `PROTEINMPNN_PATH`
    - `GENSH_PATH`
+   - `CONDA_PATH`
 
 ## 使用方法
 
